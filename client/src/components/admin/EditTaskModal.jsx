@@ -4,6 +4,15 @@ import { updateTask, fetchTalents } from '../../api/tasks';
 const STATUS_OPTIONS = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected'];
 const inputCls = 'w-full bg-bg-input border border-border rounded-lg px-3.5 py-2.5 text-sm text-text-primary outline-none placeholder:text-[#4e4a6e] focus:border-primary focus:ring-[3px] focus:ring-primary/15 transition-all font-sans resize-y';
 const labelCls = 'text-[11px] font-semibold uppercase tracking-[0.5px] text-text-muted';
+const getTodayDate = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return year + '-' + month + '-' + day;
+};
+const today = getTodayDate();
 
 const EditTaskModal = ({ task, onClose, onUpdated }) => {
   const [form, setForm] = useState({
@@ -65,7 +74,7 @@ const EditTaskModal = ({ task, onClose, onUpdated }) => {
             </div>
             <div className="flex flex-col gap-1.5">
               <label className={labelCls}>Due Date</label>
-              <input type="date" name="dueDate" value={form.dueDate} onChange={handleChange} className={inputCls} />
+              <input type="date" name="dueDate" value={form.dueDate} min={today} onChange={handleChange} className={inputCls} />
             </div>
           </div>
 

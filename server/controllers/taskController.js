@@ -1,5 +1,28 @@
 ﻿const Task = require('../models/Task');
 
+const formatDate = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const validateDueDate = (dueDate) => {
+  if (!dueDate) return null;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDate)) {
+    return 'Due date must be a valid date';
+  }
+
+  const today = formatDate(new Date());
+  if (dueDate < today) {
+    return 'Due date cannot be in the past';
+  }
+
+  return null;
+};
+
 // @desc  Get all tasks
 // @route GET /api/tasks
 // @access Admin
@@ -41,6 +64,9 @@ const createTask = async (req, res) => {
   const { title, description, status, assignedTo, dueDate } = req.body;
 
   try {
+    const dueDateError = validateDueDate(dueDate);
+    if (dueDateError) return res.status(400).json({ message: dueDateError });
+
     const task = await Task.create({
       title,
       description,
@@ -63,6 +89,10 @@ const updateTask = async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    const dueDateError = validateDueDate(req.body.dueDate);
+    if (dueDateError) return res.status(400).json({ message: dueDateError });
+
     // including internal fields like createdBy or __v
     const updated = await Task.findByIdAndUpdate(
       req.params.id,
