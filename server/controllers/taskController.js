@@ -1,4 +1,5 @@
-﻿const Task = require('../models/Task');
+﻿const mongoose = require('mongoose');
+const Task = require('../models/Task');
 
 const formatDate = (date) => {
   const year = date.getFullYear();
@@ -18,6 +19,24 @@ const validateDueDate = (dueDate) => {
   const today = formatDate(new Date());
   if (dueDate < today) {
     return 'Due date cannot be in the past';
+  }
+
+  return null;
+};
+
+const VALID_TASK_STATUSES = ['Open', 'Claimed', 'Submitted', 'Approved', 'Rejected'];
+
+const validateCreateTaskPayload = ({ title, status, assignedTo }) => {
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return 'Task title is required';
+  }
+
+  if (status && !VALID_TASK_STATUSES.includes(status)) {
+    return 'Task status is invalid';
+  }
+
+  if (assignedTo && !mongoose.Types.ObjectId.isValid(assignedTo)) {
+    return 'Assigned user is invalid';
   }
 
   return null;
@@ -64,6 +83,9 @@ const createTask = async (req, res) => {
   const { title, description, status, assignedTo, dueDate } = req.body;
 
   try {
+    const payloadError = validateCreateTaskPayload(req.body);
+    if (payloadError) return res.status(400).json({ message: payloadError });
+
     const dueDateError = validateDueDate(dueDate);
     if (dueDateError) return res.status(400).json({ message: dueDateError });
 
